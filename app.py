@@ -1,49 +1,33 @@
-import numpy as np
-import pickle
 import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
 
-@st.cache_resource
-def load_model():
-    with open("rf_model.pkl", "rb") as f:
-        return pickle.load(f)
+# -----------------------------
+# LOAD MODEL
+# -----------------------------
+artifact = joblib.load("rf_aqi_model.pkl")
+model = artifact["model"]
+features = artifact["features"]  # ['PM10','CO',"PM2.5",...]
 
-@st.cache_resource
-def load_feature_names():
-    try:
-        with open("rf_model_features.pkl", "rb") as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        return ['PM10','CO',"PM2.5",'NO2','SO2','NOx','NO','Toluene','NH3','O3']
+st.title("AQI Prediction App (Random Forest)")
+st.write("Predict next-day AQI based on pollutant levels.")
 
-model = load_model()
-FEATURES = load_feature_names()
-
-st.title("Next-Day AQI Prediction (Random Forest)")
-st.write("Enter pollutant levels to predict tomorrow's AQI (AQI_next).")
-
+# -----------------------------
+# USER INPUTS
+# -----------------------------
 st.sidebar.header("Input pollutant values")
-inputs = {}
-for feat in FEATURES:
-    inputs[feat] = st.sidebar.number_input(feat, value=50.0, step=1.0)
 
-if st.button("Predict next-day AQI"):
-    X_new = np.array([[inputs[f] for f in FEATURES]], dtype=float)
+user_input = {}
+for feat in features:
+    user_input[feat] = st.sidebar.number_input(
+        feat,
+        value=0.0,
+        format="%.3f"
+    )
+
+if st.button("Predict AQI for 1 day ahead"):
+    # Turn inputs into a DataFrame with correct column order
+    X_new = pd.DataFrame([user_input])[features]
     pred = model.predict(X_new)[0]
-
-    st.subheader("Prediction")
-    st.metric("Predicted next-day AQI", f"{pred:.2f}")
-
-    if pred <= 50:
-        category = "Good"
-    elif pred <= 100:
-        category = "Satisfactory"
-    elif pred <= 200:
-        category = "Moderate"
-    elif pred <= 300:
-        category = "Poor"
-    elif pred <= 400:
-        category = "Very Poor"
-    else:
-        category = "Severe"
-
-    st.write(f"**AQI Category:** {category}")
+    st.success(f"Predicted AQI (next day): {pred:.2f}")
