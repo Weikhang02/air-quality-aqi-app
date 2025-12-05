@@ -1,14 +1,12 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 
 # -----------------------------
 # LOAD MODEL
 # -----------------------------
-artifact = joblib.load("rf_aqi_model.pkl")
-model = artifact["model"]
-features = artifact["features"]  # ['PM10','CO',"PM2.5",...]
+model = joblib.load("rf_aqi_model.pkl")   # this is now the real RF model
+features = ['PM10','CO',"PM2.5",'NO2','SO2','NOx','NO','Toluene','NH3','O3']
 
 st.title("AQI Prediction App (Random Forest)")
 st.write("Predict next-day AQI based on pollutant levels.")
@@ -27,7 +25,6 @@ for feat in features:
     )
 
 if st.button("Predict AQI for 1 day ahead"):
-    # Turn inputs into a DataFrame with correct column order
     X_new = pd.DataFrame([user_input])[features]
     pred = model.predict(X_new)[0]
     st.success(f"Predicted AQI (next day): {pred:.2f}")
