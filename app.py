@@ -95,7 +95,7 @@ def create_gauge_chart(aqi_value, title):
         domain = {'x': [0, 1], 'y': [0, 1]},
         title = {'text': title, 'font': {'size': 20}},
         gauge = {
-            'axis': {'range': [None, 500], 'tickwidth': 1, 'tickcolor': "white"},
+            'axis': {'range': [None, 500], 'tickwidth': 1, 'tickcolor': "darkblue"},
             'bar': {'color': color},
             'bgcolor': "white",
             'borderwidth': 2,
