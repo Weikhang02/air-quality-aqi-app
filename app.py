@@ -168,7 +168,7 @@ with col1:
     st.title("🌍 AQI Forecasting Dashboard")
     st.markdown("**Predict current AQI and forecast for the next 7 days**")
 with col2:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Air_quality_index.svg/300px-Air_quality_index.svg.png", width=150)
+    st.image("aqi.png", width=150)
 
 st.markdown("---")
 
