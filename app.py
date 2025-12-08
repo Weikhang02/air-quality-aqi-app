@@ -93,10 +93,10 @@ def create_gauge_chart(aqi_value, title):
         mode = "gauge+number+delta",
         value = aqi_value,
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': title, 'font': {'size': 20, 'color': 'white'}},
-        number = {'font': {'color': 'white'}},
+        title = {'text': title, 'font': {'size': 20, 'color': '#90EE90'}},
+        number = {'font': {'color': '#90EE90'}},
         gauge = {
-            'axis': {'range': [None, 500], 'tickwidth': 1, 'tickcolor': "white", 'tickfont': {'color': 'white'}},
+            'axis': {'range': [None, 500], 'tickwidth': 1, 'tickcolor': "#90EE90", 'tickfont': {'color': '#90EE90'}},
             'bar': {'color': color},
             'bgcolor': "white",
             'borderwidth': 2,
