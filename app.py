@@ -210,13 +210,6 @@ for feat in feature_cols:
             help=f"Enter the current value for {feat}"
         )
 
-# -----------------------------
-# RESET BUTTON
-# -----------------------------
-st.sidebar.markdown("---")
-if st.sidebar.button("🔄 Reset All Values"):
-    st.rerun()
-
 st.sidebar.markdown("---")
 predict_button = st.sidebar.button("🔮 Predict AQI", use_container_width=True)
 
