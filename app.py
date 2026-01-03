@@ -197,8 +197,8 @@ for feat in feature_cols:
         user_input[feat] = st.sidebar.slider(
             f"{feat}",
             min_value=0.0,
-            max_value=500.0,
-            value=50.0,
+            max_value=1000.0,
+            value=20.0,
             step=0.5,
             help=f"Adjust {feat} concentration"
         )
