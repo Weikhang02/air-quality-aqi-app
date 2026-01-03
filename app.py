@@ -168,7 +168,7 @@ def create_forecast_chart(result_df):
 # -----------------------------
 col1, col2 = st.columns([3, 1])
 with col1:
-    st.title("🌍 AQI Forecasting Dashboard")
+    st.title("🌍7-Day AQI Forecasting Dashboard")
     st.markdown("**Predict current AQI and forecast for the next 7 days**")
 with col2:
     st.image("aqi.png", width=150)
