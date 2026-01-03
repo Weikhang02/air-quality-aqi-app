@@ -8,7 +8,7 @@ import plotly.express as px
 # PAGE CONFIG
 # -----------------------------
 st.set_page_config(
-    page_title="AQI Forecasting Dashboard",
+    page_title="7-Day AQI Forecasting Dashboard",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -179,19 +179,43 @@ st.markdown("---")
 # SIDEBAR USER INPUT
 # -----------------------------
 st.sidebar.title("📊 Input Parameters")
-st.sidebar.markdown("Enter current pollutant concentrations:")
 
+# Initialize user_input
 user_input = {}
 
-# Group pollutants by category if possible
-st.sidebar.subheader("Primary Pollutants")
+# Choice between sliders or number inputs
+input_type = st.sidebar.selectbox(
+    "Input type:",
+    ["Sliders", "Number Input"]
+)
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("### Primary Pollutants")
+
 for feat in feature_cols:
-    user_input[feat] = st.sidebar.number_input(
-        f"{feat}",
-        value=0.0,
-        format="%.3f",
-        help=f"Enter the current value for {feat}"
-    )
+    if input_type == "Sliders":
+        user_input[feat] = st.sidebar.slider(
+            f"{feat}",
+            min_value=0.0,
+            max_value=500.0,
+            value=50.0,
+            step=5.0,
+            help=f"Adjust {feat} concentration"
+        )
+    else:
+        user_input[feat] = st.sidebar.number_input(
+            f"{feat}",
+            value=0.0,
+            format="%.3f",
+            help=f"Enter the current value for {feat}"
+        )
+
+# -----------------------------
+# RESET BUTTON
+# -----------------------------
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Reset All Values"):
+    st.rerun()
 
 st.sidebar.markdown("---")
 predict_button = st.sidebar.button("🔮 Predict AQI", use_container_width=True)
