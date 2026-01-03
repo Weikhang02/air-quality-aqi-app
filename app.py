@@ -199,7 +199,7 @@ for feat in feature_cols:
             min_value=0.0,
             max_value=500.0,
             value=50.0,
-            step=5.0,
+            step=0.5,
             help=f"Adjust {feat} concentration"
         )
     else:
