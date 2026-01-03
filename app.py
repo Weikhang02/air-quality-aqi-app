@@ -8,7 +8,7 @@ import plotly.express as px
 # PAGE CONFIG
 # -----------------------------
 st.set_page_config(
-    page_title="AQI Forecasting Dashboard",
+    page_title="7-Day AQI Forecasting Dashboard",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -179,19 +179,148 @@ st.markdown("---")
 # SIDEBAR USER INPUT
 # -----------------------------
 st.sidebar.title("📊 Input Parameters")
-st.sidebar.markdown("Enter current pollutant concentrations:")
 
+# Input method selection
+input_method = st.sidebar.radio(
+    "Choose input method:",
+    ["🎯 Preset Scenarios", "📁 Upload CSV", "✍️ Manual Input"],
+    help="Select how you want to input pollutant data"
+)
+
+# Initialize user_input
 user_input = {}
 
-# Group pollutants by category if possible
-st.sidebar.subheader("Primary Pollutants")
-for feat in feature_cols:
-    user_input[feat] = st.sidebar.number_input(
-        f"{feat}",
-        value=0.0,
-        format="%.3f",
-        help=f"Enter the current value for {feat}"
+# -----------------------------
+# METHOD 1: PRESET SCENARIOS
+# -----------------------------
+if input_method == "🎯 Preset Scenarios":
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("Select a common pollution scenario:")
+    
+    # Define preset scenarios with realistic values
+    preset_scenarios = {
+        "Clean Air (Rural)": {feat: 15.0 for feat in feature_cols},
+        "Good Urban Air": {feat: 35.0 for feat in feature_cols},
+        "Moderate Pollution": {feat: 75.0 for feat in feature_cols},
+        "Unhealthy for Sensitive": {feat: 125.0 for feat in feature_cols},
+        "Unhealthy": {feat: 175.0 for feat in feature_cols},
+        "Very Unhealthy": {feat: 250.0 for feat in feature_cols},
+        "Heavy Industrial": {feat: 200.0 for feat in feature_cols},
+        "Traffic Peak Hours": {feat: 120.0 for feat in feature_cols}
+    }
+    
+    scenario = st.sidebar.selectbox(
+        "Pollution Scenario:",
+        list(preset_scenarios.keys())
     )
+    
+    user_input = preset_scenarios[scenario].copy()
+    
+    # Show info about selected scenario
+    st.sidebar.info(f"✅ Loaded: **{scenario}**\n\nYou can adjust individual values below if needed.")
+    
+    # Allow fine-tuning with expander
+    with st.sidebar.expander("🔧 Fine-tune values"):
+        for feat in feature_cols:
+            user_input[feat] = st.number_input(
+                f"{feat}",
+                value=float(user_input[feat]),
+                format="%.2f",
+                key=f"preset_{feat}"
+            )
+
+# -----------------------------
+# METHOD 2: UPLOAD CSV
+# -----------------------------
+elif input_method == "📁 Upload CSV":
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("Upload a CSV file with pollutant values:")
+    
+    uploaded_file = st.sidebar.file_uploader(
+        "Choose a CSV file",
+        type=['csv'],
+        help="CSV should contain columns matching your pollutant features"
+    )
+    
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
+            
+            # Check if required columns exist
+            missing_cols = [col for col in feature_cols if col not in df.columns]
+            
+            if missing_cols:
+                st.sidebar.error(f"❌ Missing columns: {', '.join(missing_cols)}")
+                st.sidebar.info("Using default values for missing columns")
+                for feat in feature_cols:
+                    if feat in df.columns:
+                        user_input[feat] = float(df[feat].iloc[0])
+                    else:
+                        user_input[feat] = 0.0
+            else:
+                # Use the first row or allow user to select
+                row_index = 0
+                if len(df) > 1:
+                    row_index = st.sidebar.selectbox(
+                        "Select row to use:",
+                        range(len(df)),
+                        format_func=lambda x: f"Row {x+1}"
+                    )
+                
+                user_input = df[feature_cols].iloc[row_index].to_dict()
+                st.sidebar.success(f"✅ Loaded data from row {row_index + 1}")
+                
+                # Show preview
+                with st.sidebar.expander("👀 Preview loaded data"):
+                    st.dataframe(df.head())
+        
+        except Exception as e:
+            st.sidebar.error(f"❌ Error reading file: {str(e)}")
+            for feat in feature_cols:
+                user_input[feat] = 0.0
+    else:
+        st.sidebar.info("👆 Please upload a CSV file")
+        for feat in feature_cols:
+            user_input[feat] = 0.0
+
+# -----------------------------
+# METHOD 3: MANUAL INPUT
+# -----------------------------
+else:  # Manual Input
+    st.sidebar.markdown("---")
+    
+    # Choice between sliders or number inputs
+    input_type = st.sidebar.selectbox(
+        "Input type:",
+        ["Sliders", "Number Input"]
+    )
+    
+    st.sidebar.markdown("### Primary Pollutants")
+    
+    for feat in feature_cols:
+        if input_type == "Sliders":
+            user_input[feat] = st.sidebar.slider(
+                f"{feat}",
+                min_value=0.0,
+                max_value=500.0,
+                value=50.0,
+                step=5.0,
+                help=f"Adjust {feat} concentration"
+            )
+        else:
+            user_input[feat] = st.sidebar.number_input(
+                f"{feat}",
+                value=0.0,
+                format="%.3f",
+                help=f"Enter the current value for {feat}"
+            )
+
+# -----------------------------
+# RESET BUTTON
+# -----------------------------
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Reset All Values"):
+    st.rerun()
 
 st.sidebar.markdown("---")
 predict_button = st.sidebar.button("🔮 Predict AQI", use_container_width=True)
@@ -318,7 +447,7 @@ if predict_button:
 
 else:
     # Welcome message
-    st.info("👈 Enter pollutant values in the sidebar and click 'Predict AQI' to get started!")
+    st.info("👈 Choose an input method in the sidebar and click 'Predict AQI' to get started!")
     
     # Sample visualization
     st.subheader("🎯 How it works")
@@ -326,7 +455,7 @@ else:
     
     with col1:
         st.markdown("### 1️⃣ Input Data")
-        st.write("Enter current pollutant concentrations in the sidebar")
+        st.write("Choose from preset scenarios, upload CSV, or enter values manually")
     
     with col2:
         st.markdown("### 2️⃣ AI Prediction")
